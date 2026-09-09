@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sales Desk — مدیریت فروش</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div id="projectGate" class="gate">
+  <div class="gate-card">
+    <div class="brand-mark">◈</div>
+    <h1>Sales Desk</h1>
+    <p>پروژه‌ای را برای شروع انتخاب کنید یا یک پروژه جدید بسازید.</p>
+    <div id="projectCards" class="project-cards"></div>
+    <button id="newProjectGate" class="btn btn-primary btn-wide">+ ساخت پروژه جدید</button>
+  </div>
+</div>
+
+<div id="app" class="app hidden">
+  <header class="topbar">
+    <div class="brand"><span class="brand-dot"></span><div><strong>Sales Desk</strong><small id="currentProjectName"></small></div></div>
+    <nav class="nav-tabs">
+      <button class="nav-tab active" data-view="dashboard">داشبورد</button>
+      <button class="nav-tab" data-view="leads">لیدها</button>
+      <button class="nav-tab" data-view="archive">بایگانی</button>
+      <button class="nav-tab" data-view="tasks">چک‌لیست</button>
+      <button class="nav-tab" data-view="notes">دفترچه</button>
+      <button class="nav-tab" data-view="scripts">اسکریپت‌ها</button>
+    </nav>
+    <div class="top-actions">
+      <button id="switchProjectBtn" class="btn btn-secondary">تعویض پروژه</button>
+    </div>
+  </header>
+
+  <main class="container">
+    <section id="view-dashboard" class="view active-view">
+      <div class="page-head"><div><h2>داشبورد</h2><p>تصویر کلی از وضعیت فروش این پروژه</p></div><button class="btn btn-primary" id="dashboardAddLead">+ لید جدید</button></div>
+      <section class="dashboard">
+        <div class="stat-card"><span>👥</span><strong id="statTotal">0</strong><small>کل لیدهای فعال</small></div>
+        <div class="stat-card"><span>📞</span><strong id="statCalls">0</strong><small>کل تماس‌ها</small></div>
+        <div class="stat-card"><span>🔥</span><strong id="statInterested">0</strong><small>علاقه‌مند</small></div>
+        <div class="stat-card"><span>🔁</span><strong id="statFollowups">0</strong><small>نیازمند پیگیری</small></div>
+        <div class="stat-card success"><span>💰</span><strong id="statWon">0</strong><small>فروش موفق</small></div>
+        <div class="stat-card danger"><span>✕</span><strong id="statLost">0</strong><small>رد شده / از دست رفته</small></div>
+      </section>
+      <div class="chart-grid">
+        <div class="panel chart-panel"><div class="panel-head"><h3>روند تماس‌ها</h3><span>۱۴ روز اخیر</span></div><canvas id="callsChart"></canvas></div>
+        <div class="panel chart-panel"><div class="panel-head"><h3>وضعیت لیدها</h3><span>لیدهای فعال</span></div><canvas id="statusChart"></canvas></div>
+      </div>
+      <div class="chart-grid">
+        <div class="panel chart-panel"><div class="panel-head"><h3>قیف فروش</h3><span>از لید تا فروش</span></div><canvas id="funnelChart"></canvas></div>
+        <div class="panel"><div class="panel-head"><h3>پیگیری‌های نزدیک</h3><button class="link-btn" data-view-link="tasks">مشاهده همه</button></div><div id="upcomingFollowups" class="mini-list"></div></div>
+      </div>
+    </section>
+
+    <section id="view-leads" class="view">
+      <div class="page-head"><div><h2>لیدها</h2><p>مدیریت تماس‌ها و وضعیت مشتریان احتمالی</p></div><button id="addLeadBtn" class="btn btn-primary">+ افزودن لید</button></div>
+      <section class="toolbar"><input id="searchInput" type="text" placeholder="جستجو در نام، صنعت، تلفن یا مخاطب..."><select id="filterStatus"></select></section>
+      <section class="panel table-wrap" id="tableWrap"><table><thead><tr><th>کسب‌وکار</th><th>مخاطب</th><th>صنعت</th><th>تلفن</th><th>وضعیت</th><th>پیگیری</th><th>آخرین تماس</th><th>عملیات</th></tr></thead><tbody id="leadsTableBody"></tbody></table><div id="emptyState" class="empty-state">لیدی در این بخش وجود ندارد.</div></section>
+    </section>
+
+    <section id="view-archive" class="view">
+      <div class="page-head"><div><h2>بایگانی</h2><p>فروش‌های بسته‌شده، ردشده و لیدهای پایان‌یافته</p></div><span class="count-pill" id="archiveCount">0</span></div>
+      <section class="panel table-wrap" id="archiveWrap"><table><thead><tr><th>کسب‌وکار</th><th>تلفن</th><th>نتیجه</th><th>تاریخ بسته‌شدن</th><th>یادداشت</th><th>عملیات</th></tr></thead><tbody id="archiveTableBody"></tbody></table><div id="archiveEmpty" class="empty-state">بایگانی خالی است.</div></section>
+    </section>
+
+    <section id="view-tasks" class="view">
+      <div class="page-head"><div><h2>چک‌لیست</h2><p>کارهای این پروژه را مدیریت کنید.</p></div></div>
+      <div class="two-col">
+        <section class="panel"><div class="panel-head"><h3>افزودن کار</h3></div><form id="taskForm" class="inline-form"><input id="taskInput" required placeholder="مثلاً: پیگیری شرکت X"><select id="taskPriority"><option value="normal">عادی</option><option value="high">مهم</option></select><button class="btn btn-primary">افزودن</button></form><div id="taskList" class="task-list"></div></section>
+        <section class="panel"><div class="panel-head"><h3>خلاصه کارها</h3></div><div id="taskSummary" class="summary-box"></div></section>
+      </div>
+    </section>
+
+    <section id="view-notes" class="view">
+      <div class="page-head"><div><h2>دفترچه</h2><p>یادداشت‌های آزاد، ایده‌ها و نکات تماس</p></div><button id="newNoteBtn" class="btn btn-primary">+ یادداشت جدید</button></div>
+      <div id="notesGrid" class="notes-grid"></div>
+    </section>
+
+    <section id="view-scripts" class="view">
+      <div class="page-head"><div><h2>کتابخانه اسکریپت‌ها</h2><p>اسکریپت‌های فروش را بر اساس دسته و زیر‌دسته مرتب کنید.</p></div><button id="newScriptBtn" class="btn btn-primary">+ اسکریپت جدید</button></div>
+      <div class="scripts-layout">
+        <aside class="panel category-panel"><div class="panel-head"><h3>دسته‌بندی‌ها</h3><button id="newCategoryBtn" class="icon-btn">+</button></div><div id="categoryTree"></div></aside>
+        <section><div id="scriptsGrid" class="scripts-grid"></div></section>
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- Lead modal -->
+<div id="leadModal" class="modal-overlay hidden"><div class="modal"><h2 id="leadModalTitle">افزودن لید جدید</h2><form id="leadForm"><input type="hidden" id="leadId"><label>نام کسب‌وکار *<input id="leadBusinessName" required></label><label>نام مخاطب<input id="leadContactName"></label><label>صنعت<input id="leadIndustry"></label><label>شماره تلفن *<input id="leadPhone" required></label><label>وبسایت / اینستاگرام<input id="leadWebsite"></label><label>یادداشت<textarea id="leadNotes" rows="3"></textarea></label><div class="modal-actions"><button class="btn btn-primary">ذخیره</button><button type="button" class="btn btn-secondary" id="leadCancelBtn">انصراف</button></div></form></div></div>
+
+<!-- Call modal -->
+<div id="callModal" class="modal-overlay hidden"><div class="modal"><h2>ثبت تماس — <span id="callLeadName"></span></h2><form id="callForm"><input type="hidden" id="callLeadId"><label>نتیجه تماس<select id="callOutcome"><option value="answered">پاسخ داده شد</option><option value="no-answer">پاسخ داده نشد</option></select></label><label>وضعیت جدید<select id="callStatus"></select></label><label>تاریخ پیگیری بعدی<input type="date" id="callNextFollowup"></label><label>یادداشت تماس<textarea id="callNoteText" rows="3"></textarea></label><div class="modal-actions"><button class="btn btn-primary">ثبت تماس</button><button type="button" class="btn btn-secondary" id="callCancelBtn">انصراف</button></div></form></div></div>
+
+<!-- Note modal -->
+<div id="noteModal" class="modal-overlay hidden"><div class="modal"><h2 id="noteModalTitle">یادداشت جدید</h2><form id="noteForm"><input type="hidden" id="noteId"><label>عنوان<input id="noteTitle" required></label><label>متن یادداشت<textarea id="noteBody" rows="9" required></textarea></label><div class="modal-actions"><button class="btn btn-primary">ذخیره</button><button type="button" class="btn btn-secondary" id="noteCancelBtn">انصراف</button></div></form></div></div>
+
+<!-- Script modal -->
+<div id="scriptModal" class="modal-overlay hidden"><div class="modal"><h2 id="scriptModalTitle">اسکریپت جدید</h2><form id="scriptForm"><input type="hidden" id="scriptId"><label>عنوان اسکریپت<input id="scriptTitle" required></label><label>دسته اصلی<select id="scriptCategory"></select></label><label>زیر‌دسته / مادر<select id="scriptSubcategory"></select></label><label>متن اسکریپت<textarea id="scriptBody" rows="10" required></textarea></label><div class="modal-actions"><button class="btn btn-primary">ذخیره</button><button type="button" class="btn btn-secondary" id="scriptCancelBtn">انصراف</button></div></form></div></div>
+
+<!-- Category modal -->
+<div id="categoryModal" class="modal-overlay hidden"><div class="modal"><h2>دسته‌بندی جدید</h2><form id="categoryForm"><label>نام دسته<input id="categoryName" required></label><label>دسته مادر (اختیاری)<select id="categoryParent"><option value="">بدون مادر</option></select></label><div class="modal-actions"><button class="btn btn-primary">ذخیره</button><button type="button" class="btn btn-secondary" id="categoryCancelBtn">انصراف</button></div></form></div></div>
+
+<!-- Project modal -->
+<div id="projectModal" class="modal-overlay hidden"><div class="modal"><h2>ساخت پروژه جدید</h2><form id="projectForm"><label>نام پروژه<input id="projectName" required placeholder="مثلاً: فروش اتوماسیون — مشتری A"></label><label>توضیح کوتاه<textarea id="projectDescription" rows="3"></textarea></label><div class="modal-actions"><button class="btn btn-primary">ساخت پروژه</button><button type="button" class="btn btn-secondary" id="projectCancelBtn">انصراف</button></div></form></div></div>
+
+<script src="app.js"></script>
+</body>
+</html>
