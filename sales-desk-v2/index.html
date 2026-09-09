@@ -100,6 +100,9 @@
 <!-- Script modal -->
 <div id="scriptModal" class="modal-overlay hidden"><div class="modal"><h2 id="scriptModalTitle">اسکریپت جدید</h2><form id="scriptForm"><input type="hidden" id="scriptId"><label>عنوان اسکریپت<input id="scriptTitle" required></label><label>دسته اصلی<select id="scriptCategory"></select></label><label>زیر‌دسته / مادر<select id="scriptSubcategory"></select></label><label>متن اسکریپت<textarea id="scriptBody" rows="10" required></textarea></label><div class="modal-actions"><button class="btn btn-primary">ذخیره</button><button type="button" class="btn btn-secondary" id="scriptCancelBtn">انصراف</button></div></form></div></div>
 
+<!-- View modal (large read-only view for notes & scripts) -->
+<div id="viewModal" class="modal-overlay hidden"><div class="modal modal-view"><h2 id="viewModalTitle"></h2><div class="view-meta" id="viewModalMeta"></div><div class="view-body" id="viewModalBody"></div><div class="modal-actions"><button class="btn btn-primary" id="viewEditBtn">ویرایش</button><button type="button" class="btn btn-secondary" id="viewCloseBtn">بستن</button></div></div></div>
+
 <!-- Category modal -->
 <div id="categoryModal" class="modal-overlay hidden"><div class="modal"><h2>دسته‌بندی جدید</h2><form id="categoryForm"><label>نام دسته<input id="categoryName" required></label><label>دسته مادر (اختیاری)<select id="categoryParent"><option value="">بدون مادر</option></select></label><div class="modal-actions"><button class="btn btn-primary">ذخیره</button><button type="button" class="btn btn-secondary" id="categoryCancelBtn">انصراف</button></div></form></div></div>
 
