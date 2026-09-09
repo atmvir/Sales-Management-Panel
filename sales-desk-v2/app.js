@@ -11,6 +11,7 @@ const STATUS_LABELS = {
 let projects = [];
 let activeProjectId = null;
 let selectedCategoryId = 'all';
+let currentView = {type:'', id:''};
 
 const $ = id => document.getElementById(id);
 const genId = () => 'id_' + Date.now() + '_' + Math.random().toString(36).slice(2,8);
@@ -77,6 +78,7 @@ function bindGlobal(){
   $('categoryTree').onclick=e=>{const b=e.target.closest('[data-cat]');if(b){selectedCategoryId=b.dataset.cat;renderScripts();}};
   $('scriptsGrid').onclick=handleScriptAction;
   $('projectForm').onsubmit=createProject; $('projectCancelBtn').onclick=()=>closeModal('projectModal');
+  $('viewEditBtn').onclick=editFromView; $('viewCloseBtn').onclick=()=>closeModal('viewModal');
   document.querySelectorAll('.modal-overlay').forEach(m=>m.onclick=e=>{if(e.target===m)m.classList.add('hidden')});
 }
 
@@ -169,20 +171,40 @@ function renderArchive(){const p=activeProject();if(!p)return;$('archiveCount').
 function renderTasks(){const p=activeProject(),list=p.tasks;$('taskList').innerHTML=list.length?list.map(t=>`<div class="task ${t.done?'done':''}"><label><input type="checkbox" data-task-toggle="${t.id}" ${t.done?'checked':''}><span>${escapeHtml(t.title)}</span></label><div><small class="${t.priority==='high'?'priority-high':''}">${t.priority==='high'?'مهم':'عادی'}</small><button class="icon-btn" data-task-delete="${t.id}">×</button></div></div>`).join(''):'<div class="empty-state">کاری ثبت نشده.</div>';const done=list.filter(x=>x.done).length;$('taskSummary').innerHTML=`<strong>${done} / ${list.length}</strong><span>کار انجام‌شده</span><div class="progress-line"><i style="width:${list.length?done/list.length*100:0}%"></i></div>`;$('taskList').onclick=e=>{const t=p.tasks.find(x=>x.id===e.target.dataset.taskToggle);if(t){t.done=e.target.checked;saveProjects();renderTasks()}const d=e.target.closest('[data-task-delete]');if(d){p.tasks=p.tasks.filter(x=>x.id!==d.dataset.taskDelete);saveProjects();renderTasks()}}}
 function addTask(e){e.preventDefault();const p=activeProject();p.tasks.push({id:genId(),title:$('taskInput').value.trim(),priority:$('taskPriority').value,done:false,createdAt:todayStr()});saveProjects();$('taskForm').reset();renderTasks()}
 
-function renderNotes(){const p=activeProject();$('notesGrid').innerHTML=p.notes.length?p.notes.slice().reverse().map(n=>`<article class="note-card"><div class="note-top"><h3>${escapeHtml(n.title)}</h3><span>${fmtDate(n.updatedAt||n.createdAt)}</span></div><p>${escapeHtml(n.body).replace(/\n/g,'<br>')}</p><div class="note-actions"><button class="btn btn-sm btn-edit" data-note-edit="${n.id}">ویرایش</button><button class="btn btn-sm btn-delete" data-note-delete="${n.id}">حذف</button></div></article>`).join(''):'<div class="empty-state panel">دفترچه خالی است.</div>'}
+function renderNotes(){const p=activeProject();$('notesGrid').innerHTML=p.notes.length?p.notes.slice().reverse().map(n=>`<article class="note-card"><div class="note-top"><h3>${escapeHtml(n.title)}</h3><span>${fmtDate(n.updatedAt||n.createdAt)}</span></div><p>${escapeHtml(n.body).replace(/\n/g,'<br>')}</p><div class="note-actions"><button class="btn btn-sm btn-view" data-note-view="${n.id}">مشاهده بزرگ</button><button class="btn btn-sm btn-edit" data-note-edit="${n.id}">ویرایش</button><button class="btn btn-sm btn-delete" data-note-delete="${n.id}">حذف</button></div></article>`).join(''):'<div class="empty-state panel">دفترچه خالی است.</div>'}
 function openNoteModal(n=null){$('noteForm').reset();$('noteId').value=n?.id||'';$('noteModalTitle').textContent=n?'ویرایش یادداشت':'یادداشت جدید';if(n){$('noteTitle').value=n.title;$('noteBody').value=n.body}openModal('noteModal')}
 function saveNote(e){e.preventDefault();const p=activeProject(),id=$('noteId').value,base={title:$('noteTitle').value.trim(),body:$('noteBody').value.trim(),updatedAt:todayStr()};if(id)Object.assign(p.notes.find(n=>n.id===id),base);else p.notes.push({id:genId(),...base,createdAt:todayStr()});saveProjects();closeModal('noteModal');renderNotes()}
-function handleNoteAction(e){const b=e.target.closest('[data-note-edit],[data-note-delete]');if(!b)return;const p=activeProject(),id=b.dataset.noteEdit||b.dataset.noteDelete,n=p.notes.find(x=>x.id===id);if(b.dataset.noteEdit)openNoteModal(n);else if(confirm('یادداشت حذف شود؟')){p.notes=p.notes.filter(x=>x.id!==id);saveProjects();renderNotes()}}
+function handleNoteAction(e){const b=e.target.closest('[data-note-edit],[data-note-delete],[data-note-view]');if(!b)return;const p=activeProject(),id=b.dataset.noteEdit||b.dataset.noteDelete||b.dataset.noteView,n=p.notes.find(x=>x.id===id);if(b.dataset.noteView)openViewModal('note',n);else if(b.dataset.noteEdit)openNoteModal(n);else if(confirm('یادداشت حذف شود؟')){p.notes=p.notes.filter(x=>x.id!==id);saveProjects();renderNotes()}}
 
 function renderCategories(){const p=activeProject();const roots=p.categories.filter(c=>!c.parentId);const child=(parent,depth=0)=>p.categories.filter(c=>c.parentId===parent).map(c=>`<button class="cat-item ${selectedCategoryId===c.id?'selected':''}" data-cat="${c.id}" style="--depth:${depth}">${depth?'↳ ':''}${escapeHtml(c.name)}</button>`).join('');$('categoryTree').innerHTML=`<button class="cat-item ${selectedCategoryId==='all'?'selected':''}" data-cat="all">همه اسکریپت‌ها</button>`+roots.map(c=>`<button class="cat-item ${selectedCategoryId===c.id?'selected':''}" data-cat="${c.id}">${escapeHtml(c.name)}</button>${child(c.id,1)}`).join('')}
-function renderScripts(){const p=activeProject();renderCategories();const scripts=p.scripts.filter(s=>selectedCategoryId==='all'||s.categoryId===selectedCategoryId||s.subcategoryId===selectedCategoryId);$('scriptsGrid').innerHTML=scripts.length?scripts.map(s=>{const cat=p.categories.find(c=>c.id===s.categoryId),sub=p.categories.find(c=>c.id===s.subcategoryId);return `<article class="script-card"><div class="script-meta"><span>${escapeHtml(cat?.name||'بدون دسته')}</span>${sub?`<span>› ${escapeHtml(sub.name)}</span>`:''}</div><h3>${escapeHtml(s.title)}</h3><p>${escapeHtml(s.body).replace(/\n/g,'<br>')}</p><div class="script-actions"><button class="btn btn-sm btn-edit" data-script-edit="${s.id}">ویرایش</button><button class="btn btn-sm btn-delete" data-script-delete="${s.id}">حذف</button></div></article>`}).join(''):'<div class="empty-state panel">اسکریپتی در این دسته وجود ندارد.</div>'}
+function renderScripts(){const p=activeProject();renderCategories();const scripts=p.scripts.filter(s=>selectedCategoryId==='all'||s.categoryId===selectedCategoryId||s.subcategoryId===selectedCategoryId);$('scriptsGrid').innerHTML=scripts.length?scripts.map(s=>{const cat=p.categories.find(c=>c.id===s.categoryId),sub=p.categories.find(c=>c.id===s.subcategoryId);return `<article class="script-card"><div class="script-meta"><span>${escapeHtml(cat?.name||'بدون دسته')}</span>${sub?`<span>› ${escapeHtml(sub.name)}</span>`:''}</div><h3>${escapeHtml(s.title)}</h3><p>${escapeHtml(s.body).replace(/\n/g,'<br>')}</p><div class="script-actions"><button class="btn btn-sm btn-view" data-script-view="${s.id}">مشاهده بزرگ</button><button class="btn btn-sm btn-edit" data-script-edit="${s.id}">ویرایش</button><button class="btn btn-sm btn-delete" data-script-delete="${s.id}">حذف</button></div></article>`}).join(''):'<div class="empty-state panel">اسکریپتی در این دسته وجود ندارد.</div>'}
 function populateScriptCategories(selected='',sub=''){const p=activeProject();$('scriptCategory').innerHTML=p.categories.filter(c=>!c.parentId).map(c=>`<option value="${c.id}" ${selected===c.id?'selected':''}>${escapeHtml(c.name)}</option>`).join('');updateSubcategories(sub)}
 function updateSubcategories(selected=''){const p=activeProject(),cat=$('scriptCategory').value;$('scriptSubcategory').innerHTML='<option value="">بدون زیر‌دسته</option>'+p.categories.filter(c=>c.parentId===cat).map(c=>`<option value="${c.id}" ${selected===c.id?'selected':''}>${escapeHtml(c.name)}</option>`).join('')}
 function openScriptModal(s=null){$('scriptForm').reset();$('scriptId').value=s?.id||'';$('scriptModalTitle').textContent=s?'ویرایش اسکریپت':'اسکریپت جدید';populateScriptCategories(s?.categoryId||'');if(s){$('scriptTitle').value=s.title;$('scriptBody').value=s.body;updateSubcategories(s.subcategoryId||'')}$('scriptCategory').onchange=()=>updateSubcategories();openModal('scriptModal')}
 function saveScript(e){e.preventDefault();const p=activeProject(),id=$('scriptId').value,base={title:$('scriptTitle').value.trim(),categoryId:$('scriptCategory').value,subcategoryId:$('scriptSubcategory').value,body:$('scriptBody').value.trim(),updatedAt:todayStr()};if(id)Object.assign(p.scripts.find(s=>s.id===id),base);else p.scripts.push({id:genId(),...base,createdAt:todayStr()});saveProjects();closeModal('scriptModal');renderScripts()}
-function handleScriptAction(e){const b=e.target.closest('[data-script-edit],[data-script-delete]');if(!b)return;const p=activeProject(),id=b.dataset.scriptEdit||b.dataset.scriptDelete;if(b.dataset.scriptEdit)openScriptModal(p.scripts.find(s=>s.id===id));else if(confirm('اسکریپت حذف شود؟')){p.scripts=p.scripts.filter(s=>s.id!==id);saveProjects();renderScripts()}}
+function handleScriptAction(e){const b=e.target.closest('[data-script-edit],[data-script-delete],[data-script-view]');if(!b)return;const p=activeProject(),id=b.dataset.scriptEdit||b.dataset.scriptDelete||b.dataset.scriptView;if(b.dataset.scriptView)openViewModal('script',p.scripts.find(s=>s.id===id));else if(b.dataset.scriptEdit)openScriptModal(p.scripts.find(s=>s.id===id));else if(confirm('اسکریپت حذف شود؟')){p.scripts=p.scripts.filter(s=>s.id!==id);saveProjects();renderScripts()}}
 function openCategoryModal(){const p=activeProject();$('categoryForm').reset();$('categoryParent').innerHTML='<option value="">بدون مادر</option>'+p.categories.map(c=>`<option value="${c.id}">${escapeHtml(c.name)}</option>`).join('');openModal('categoryModal')}
 function saveCategory(e){e.preventDefault();const p=activeProject();p.categories.push({id:genId(),name:$('categoryName').value.trim(),parentId:$('categoryParent').value});saveProjects();closeModal('categoryModal');renderScripts()}
+
+function openViewModal(type,item){
+  if(!item)return;
+  currentView={type,id:item.id};
+  $('viewModalTitle').textContent=item.title;
+  if(type==='note'){
+    $('viewModalMeta').textContent='یادداشت — بروزرسانی: '+fmtDate(item.updatedAt||item.createdAt);
+  } else {
+    const p=activeProject(),cat=p.categories.find(c=>c.id===item.categoryId),sub=p.categories.find(c=>c.id===item.subcategoryId);
+    $('viewModalMeta').textContent='اسکریپت'+(cat?' — '+cat.name:'')+(sub?' › '+sub.name:'');
+  }
+  $('viewModalBody').textContent=item.body;
+  openModal('viewModal');
+}
+function editFromView(){
+  const p=activeProject();
+  closeModal('viewModal');
+  if(currentView.type==='note') openNoteModal(p.notes.find(n=>n.id===currentView.id));
+  else if(currentView.type==='script') openScriptModal(p.scripts.find(s=>s.id===currentView.id));
+}
 
 window.addEventListener('resize',()=>{if(activeProjectId)renderDashboard()});
 document.addEventListener('DOMContentLoaded',init);
