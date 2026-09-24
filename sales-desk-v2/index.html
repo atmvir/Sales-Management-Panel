@@ -22,14 +22,17 @@
     <div class="brand"><span class="brand-dot"></span><div><strong>Sales Desk</strong><small id="currentProjectName"></small></div></div>
     <nav class="nav-tabs">
       <button class="nav-tab active" data-view="dashboard">داشبورد</button>
+      <button class="nav-tab" data-view="today">امروز</button>
       <button class="nav-tab" data-view="leads">لیدها</button>
+      <button class="nav-tab" data-view="pipeline">پایپ‌لاین</button>
+      <button class="nav-tab" data-view="followups">پیگیری‌ها</button>
       <button class="nav-tab" data-view="archive">بایگانی</button>
       <button class="nav-tab" data-view="tasks">چک‌لیست</button>
       <button class="nav-tab" data-view="notes">دفترچه</button>
       <button class="nav-tab" data-view="scripts">اسکریپت‌ها</button>
     </nav>
     <div class="top-actions">
-      <button id="switchProjectBtn" class="btn btn-secondary">تعویض پروژه</button>
+      <button id="backupBtn" class="btn btn-secondary">پشتیبان</button><button id="switchProjectBtn" class="btn btn-secondary">تعویض پروژه</button>
     </div>
   </header>
 
@@ -50,19 +53,46 @@
       </div>
       <div class="chart-grid">
         <div class="panel chart-panel"><div class="panel-head"><h3>قیف فروش</h3><span>از لید تا فروش</span></div><canvas id="funnelChart"></canvas></div>
-        <div class="panel"><div class="panel-head"><h3>پیگیری‌های نزدیک</h3><button class="link-btn" data-view-link="tasks">مشاهده همه</button></div><div id="upcomingFollowups" class="mini-list"></div></div>
+        <div class="panel"><div class="panel-head"><h3>پیگیری‌های نزدیک</h3><button class="link-btn" data-view-link="followups">مشاهده همه</button></div><div id="upcomingFollowups" class="mini-list"></div></div>
       </div>
+          <section class="panel revenue-panel"><div class="panel-head"><h3>ارزش فروش</h3><span>بر اساس ارزش ثبت‌شده لیدها</span></div><div class="revenue-grid"><div><small>ارزش Pipeline</small><strong id="revenuePipelineValue">—</strong></div><div><small>برآورد وزنی Pipeline</small><strong id="revenueWeightedValue">—</strong></div><div><small>فروش ثبت‌شده</small><strong id="revenueWonValue">—</strong></div></div><p class="revenue-note">مبلغ‌ها در همان واحدی نمایش داده می‌شوند که هنگام ثبت وارد کرده‌اید. برآورد وزنی یک شاخص داخلی است و از وزن مرحله‌های فعلی (۱۰٪، ۲۵٪، ۵۰٪ و ۷۵٪) استفاده می‌کند.</p></section>
+</section>
+
+    <section id="view-today" class="view">
+      <div class="page-head"><div><h2>امروز با چه کسی تماس بگیرم؟</h2><p>ده لید اول بر اساس عقب‌افتادگی پیگیری، مرحله فروش و ارزش معامله مرتب شده‌اند.</p></div><button class="btn btn-primary" id="todayStartBtn">شروع تماس با نفر اول</button></div>
+      <section class="panel"><div id="todayList" class="today-list"></div></section>
     </section>
 
     <section id="view-leads" class="view">
-      <div class="page-head"><div><h2>لیدها</h2><p>مدیریت تماس‌ها و وضعیت مشتریان احتمالی</p></div><button id="addLeadBtn" class="btn btn-primary">+ افزودن لید</button></div>
+      <div class="page-head"><div><h2>لیدها</h2><p>مدیریت تماس‌ها و وضعیت مشتریان احتمالی</p></div><div class="head-actions"><button id="importLeadsBtn" class="btn btn-secondary">ورود CSV</button><button id="exportLeadsBtn" class="btn btn-secondary">خروجی CSV</button><button id="addLeadBtn" class="btn btn-primary">+ افزودن لید</button></div></div>
       <section class="toolbar"><input id="searchInput" type="text" placeholder="جستجو در نام، صنعت، تلفن یا مخاطب..."><select id="filterStatus"></select></section>
-      <section class="panel table-wrap" id="tableWrap"><table><thead><tr><th>کسب‌وکار</th><th>مخاطب</th><th>صنعت</th><th>تلفن</th><th>وضعیت</th><th>پیگیری</th><th>آخرین تماس</th><th>عملیات</th></tr></thead><tbody id="leadsTableBody"></tbody></table><div id="emptyState" class="empty-state">لیدی در این بخش وجود ندارد.</div></section>
+      <section class="panel table-wrap" id="tableWrap"><table><thead><tr><th>کسب‌وکار</th><th>مخاطب</th><th>صنعت</th><th>تلفن</th><th>ارزش معامله</th><th>وضعیت</th><th>پیگیری</th><th>آخرین تماس</th><th>عملیات</th></tr></thead><tbody id="leadsTableBody"></tbody></table><div id="emptyState" class="empty-state">لیدی در این بخش وجود ندارد.</div></section>
+    </section>
+
+    <section id="view-pipeline" class="view">
+      <div class="page-head"><div><h2>پایپ‌لاین فروش</h2><p>لیدها را مرحله‌به‌مرحله ببینید و با Drag & Drop جابه‌جا کنید.</p></div><button class="btn btn-primary" id="pipelineAddLead">+ لید جدید</button></div>
+      <section class="toolbar"><input id="pipelineSearchInput" type="text" placeholder="جستجو در پایپ‌لاین..." autocomplete="off"><select id="pipelineStatusFilter"><option value="">همه مراحل</option></select></section>
+      <div id="pipelineBoard" class="pipeline-board"></div>
+    </section>
+
+    <section id="view-followups" class="view">
+      <div class="page-head"><div><h2>مرکز پیگیری</h2><p>پیگیری‌های سررسیدشده و برنامه‌ریزی‌شده را از یکجا مدیریت کنید.</p></div><button class="btn btn-primary" id="followupAddLead">+ لید جدید</button></div>
+      <section class="dashboard followup-summary">
+        <div class="stat-card danger"><span>⚠️</span><strong id="followupOverdueCount">0</strong><small>عقب‌افتاده</small></div>
+        <div class="stat-card"><span>📅</span><strong id="followupTodayCount">0</strong><small>امروز</small></div>
+        <div class="stat-card"><span>🔜</span><strong id="followupUpcomingCount">0</strong><small>آینده</small></div>
+        <div class="stat-card success"><span>📌</span><strong id="followupTotalCount">0</strong><small>کل پیگیری‌های فعال</small></div>
+      </section>
+      <section class="toolbar">
+        <input id="followupSearchInput" type="text" placeholder="جستجو در نام، مخاطب، صنعت یا تلفن..." autocomplete="off">
+        <select id="followupFilter"><option value="all">همه پیگیری‌ها</option><option value="overdue">عقب‌افتاده</option><option value="today">امروز</option><option value="upcoming">آینده</option></select>
+      </section>
+      <section class="panel table-wrap" id="followupWrap"><table><thead><tr><th>تاریخ</th><th>کسب‌وکار</th><th>مخاطب</th><th>تلفن</th><th>وضعیت</th><th>آخرین تماس</th><th>عملیات</th></tr></thead><tbody id="followupTableBody"></tbody></table><div id="followupEmpty" class="empty-state">پیگیری‌ای برای نمایش وجود ندارد.</div></section>
     </section>
 
     <section id="view-archive" class="view">
       <div class="page-head"><div><h2>بایگانی</h2><p>فروش‌های بسته‌شده، ردشده و لیدهای پایان‌یافته</p></div><span class="count-pill" id="archiveCount">0</span></div>
-      <section class="panel table-wrap" id="archiveWrap"><table><thead><tr><th>کسب‌وکار</th><th>تلفن</th><th>نتیجه</th><th>تاریخ بسته‌شدن</th><th>یادداشت</th><th>عملیات</th></tr></thead><tbody id="archiveTableBody"></tbody></table><div id="archiveEmpty" class="empty-state">بایگانی خالی است.</div></section>
+      <section class="panel table-wrap" id="archiveWrap"><table><thead><tr><th>کسب‌وکار</th><th>تلفن</th><th>ارزش معامله</th><th>نتیجه</th><th>تاریخ بسته‌شدن</th><th>یادداشت</th><th>عملیات</th></tr></thead><tbody id="archiveTableBody"></tbody></table><div id="archiveEmpty" class="empty-state">بایگانی خالی است.</div></section>
     </section>
 
     <section id="view-tasks" class="view">
@@ -88,8 +118,15 @@
   </main>
 </div>
 
+<!-- Backup modal -->
+<div id="backupModal" class="modal-overlay hidden"><div class="modal"><h2>پشتیبان و بازیابی</h2><p>از همه پروژه‌ها، لیدها، تماس‌ها، کارها، یادداشت‌ها و اسکریپت‌ها یک فایل JSON بسازید یا یک نسخه قبلی را برگردانید.</p><div class="panel" style="padding:14px;margin:14px 0"><strong>خروجی</strong><p>فایل پشتیبان شامل تمام داده‌های Sales Desk فعلی است.</p><button type="button" class="btn btn-primary" id="exportBackupBtn">دانلود Backup</button></div><div class="panel" style="padding:14px;margin:14px 0"><strong>بازیابی</strong><p>با بازیابی، داده‌های فعلی با اطلاعات فایل انتخاب‌شده جایگزین می‌شوند.</p><input id="backupFile" type="file" accept="application/json,.json"><div id="backupStatus" style="margin-top:10px;color:var(--muted)"></div></div><div class="modal-actions"><button type="button" class="btn btn-secondary" onclick="closeModal('backupModal')">بستن</button></div></div></div>
+
+
+<!-- Lead CSV import modal -->
+<div id="leadImportModal" class="modal-overlay hidden"><div class="modal modal-wide"><h2>ورود گروهی لیدها از CSV</h2><p>ستون‌های الزامی: <code>businessName</code> و <code>phone</code>. ستون‌های اختیاری: <code>contactName</code>، <code>industry</code>، <code>website</code>، <code>notes</code>، <code>status</code> و <code>nextFollowupDate</code>.</p><p class="muted-note">لید تکراری بر اساس شماره تلفن (یا نام کسب‌وکار + مخاطب در نبود تلفن) وارد نمی‌شود. وضعیت‌های نهایی مستقیماً به بایگانی می‌روند.</p><label>فایل CSV<input id="leadImportFile" type="file" accept=".csv,text/csv"></label><div id="leadImportStatus" class="import-status"></div><div id="leadImportPreview" class="import-preview"><div class="empty-state">یک فایل CSV انتخاب کنید.</div></div><div class="modal-actions"><button type="button" class="btn btn-primary" id="leadImportCommitBtn" disabled>افزودن لیدها</button><button type="button" class="btn btn-secondary" onclick="closeModal('leadImportModal')">بستن</button></div></div></div>
+
 <!-- Lead modal -->
-<div id="leadModal" class="modal-overlay hidden"><div class="modal"><h2 id="leadModalTitle">افزودن لید جدید</h2><form id="leadForm"><input type="hidden" id="leadId"><label>نام کسب‌وکار *<input id="leadBusinessName" required></label><label>نام مخاطب<input id="leadContactName"></label><label>صنعت<input id="leadIndustry"></label><label>شماره تلفن *<input id="leadPhone" required></label><label>وبسایت / اینستاگرام<input id="leadWebsite"></label><label>یادداشت<textarea id="leadNotes" rows="3"></textarea></label><div class="modal-actions"><button class="btn btn-primary">ذخیره</button><button type="button" class="btn btn-secondary" id="leadCancelBtn">انصراف</button></div></form></div></div>
+<div id="leadModal" class="modal-overlay hidden"><div class="modal"><h2 id="leadModalTitle">افزودن لید جدید</h2><form id="leadForm"><input type="hidden" id="leadId"><label>نام کسب‌وکار *<input id="leadBusinessName" required></label><label>نام مخاطب<input id="leadContactName"></label><label>صنعت<input id="leadIndustry"></label><label>شماره تلفن *<input id="leadPhone" required inputmode="tel"></label><label>ارزش معامله<input id="leadDealValue" type="number" min="0" step="1" inputmode="numeric" placeholder="مثلاً 50000000"></label><label>وبسایت / اینستاگرام<input id="leadWebsite"></label><label>یادداشت<textarea id="leadNotes" rows="3"></textarea></label><div class="modal-actions"><button class="btn btn-primary">ذخیره</button><button type="button" class="btn btn-secondary" id="leadCancelBtn">انصراف</button></div></form></div></div>
 
 <!-- Call modal -->
 <div id="callModal" class="modal-overlay hidden"><div class="modal"><h2>ثبت تماس — <span id="callLeadName"></span></h2><form id="callForm"><input type="hidden" id="callLeadId"><label>نتیجه تماس<select id="callOutcome"><option value="answered">پاسخ داده شد</option><option value="no-answer">پاسخ داده نشد</option></select></label><label>وضعیت جدید<select id="callStatus"></select></label><label>تاریخ پیگیری بعدی<input type="date" id="callNextFollowup"></label><label>یادداشت تماس<textarea id="callNoteText" rows="3"></textarea></label><div class="modal-actions"><button class="btn btn-primary">ثبت تماس</button><button type="button" class="btn btn-secondary" id="callCancelBtn">انصراف</button></div></form></div></div>
@@ -99,6 +136,9 @@
 
 <!-- Script modal -->
 <div id="scriptModal" class="modal-overlay hidden"><div class="modal"><h2 id="scriptModalTitle">اسکریپت جدید</h2><form id="scriptForm"><input type="hidden" id="scriptId"><label>عنوان اسکریپت<input id="scriptTitle" required></label><label>دسته اصلی<select id="scriptCategory"></select></label><label>زیر‌دسته / مادر<select id="scriptSubcategory"></select></label><label>متن اسکریپت<textarea id="scriptBody" rows="10" required></textarea></label><div class="modal-actions"><button class="btn btn-primary">ذخیره</button><button type="button" class="btn btn-secondary" id="scriptCancelBtn">انصراف</button></div></form></div></div>
+
+<!-- Lead detail / 360 modal -->
+<div id="leadDetailModal" class="modal-overlay hidden"><div class="modal modal-lead-detail"><div class="lead-detail-head"><div><h2 id="leadDetailTitle"></h2><p id="leadDetailSubtitle" class="lead-detail-subtitle"></p></div><span id="leadDetailStatus" class="badge badge-primary-soft"></span></div><div id="leadDetailInfo" class="lead-detail-info"></div><section class="lead-detail-section"><div class="panel-head"><h3>یادداشت‌ها</h3></div><div id="leadDetailNotes" class="lead-detail-notes"></div></section><section class="lead-detail-section"><div class="panel-head"><h3>Timeline فعالیت</h3></div><div id="leadDetailTimeline" class="lead-timeline"></div></section><div class="modal-actions"><button type="button" class="btn btn-primary" id="leadDetailCallBtn">ثبت تماس</button><button type="button" class="btn btn-secondary" id="leadDetailEditBtn">ویرایش لید</button><button type="button" class="btn btn-restore hidden" id="leadDetailRestoreBtn">بازگردانی</button><button type="button" class="btn btn-secondary" onclick="closeModal('leadDetailModal')">بستن</button></div></div></div>
 
 <!-- View modal (large read-only view for notes & scripts) -->
 <div id="viewModal" class="modal-overlay hidden"><div class="modal modal-view"><h2 id="viewModalTitle"></h2><div class="view-meta" id="viewModalMeta"></div><div class="view-body" id="viewModalBody"></div><div class="modal-actions"><button class="btn btn-primary" id="viewEditBtn">ویرایش</button><button type="button" class="btn btn-secondary" id="viewCloseBtn">بستن</button></div></div></div>
